@@ -3,6 +3,7 @@ import tkinter
 from tkinter import Tk, Frame, Button, ttk, StringVar, Canvas
 import random
 import time
+import threading
 
 # WIDTH and HEIGHT of the MainFrame
 MF_WIDTH = 1300
@@ -22,19 +23,22 @@ canvas = Canvas(mainFrame, width=WIDTH_CANVAS, height=HEIGHT_CANVAS, bg="#ABC")
 bars = []
 
 
-#################################################################
-# Function renders the Canvas and draws all the bars
-#################################################################
+# #################################################################
+# # Function renders the Canvas and draws all the bars
+# #################################################################
 def render_bars():
     canvas.delete("all")
     bar_width = int(WIDTH_CANVAS / len(bars))
 
-    for _ in range(0, len(bars)):
-        canvas.create_rectangle(
-            _ * bar_width, HEIGHT_CANVAS,
-            (_ * bar_width) + bar_width,
-            HEIGHT_CANVAS - bars[_],
-            fill="red")
+    try:
+        for _ in range(0, len(bars)):
+            canvas.create_rectangle(
+                _ * bar_width, HEIGHT_CANVAS,
+                (_ * bar_width) + bar_width,
+                HEIGHT_CANVAS - bars[_],
+                fill="red")
+    except IndexError:
+        print()
 
 
 #################################################################
@@ -55,14 +59,27 @@ def generate_bars(*args):
 # SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS
 # SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS
 ############################################################################################################
-def bubble_sort():
-    n = len(bars)
-    for i in range(n - 1):
-        for j in range(0, n - i - 1):
-            if bars[j] > bars[j + 1]:
-                bars[j], bars[j + 1] = bars[j + 1], bars[j]
+class BubbleThread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
 
-    render_bars()
+    def run(self):
+        try:
+            n = len(bars)
+            for i in range(n - 1):
+                for j in range(0, n - i - 1):
+                    if bars[j] > bars[j + 1]:
+                        bars[j], bars[j + 1] = bars[j + 1], bars[j]
+                        render_bars()
+                        time.sleep(0.02)
+        except IndexError:
+            print()
+
+
+def start_bubble_thread():
+    thread = BubbleThread()
+    thread.start()
+
 
 ############################################################################################################
 # SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS
@@ -95,8 +112,10 @@ def init_button_controls(parent):
 # Function creates the buttons, that enable the sorting algorithms
 #################################################################
 def init_button_sortingAlgorithms(parent):
+    # bubbleSort = BubbleThread()
+
     Button(parent, width=ALGORITHM_BUTTONS_WIDTH, height=ALGORITHM_BUTTONS_HEIGHT, text="Bubble Sort",
-           command=bubble_sort) \
+           command=start_bubble_thread) \
         .grid(row=0, column=0, padx=50)
 
     Button(parent, width=ALGORITHM_BUTTONS_WIDTH, height=ALGORITHM_BUTTONS_HEIGHT, text="Insertion Sort") \
