@@ -104,7 +104,6 @@ def selection_sort():
         (bars[step], bars[min_idx]) = (bars[min_idx], bars[step])
         render_bars()
 
-
 def start_thread(sortingAlgorithm):
     if sortingAlgorithm == "bubble_sort":
         SortingAlgorithm(bubble_sort).start()
@@ -138,11 +137,11 @@ def init_button_sortingAlgorithms(parent):
     ttk.Scale(parent, length=150, from_=10, to=100, orient="horizontal",
               command=generate_bars).grid(row=3, column=0, padx=5, pady=20)
 
+
 #################################################################
 # Function initializes and runs the GUI
 #################################################################
 def initWindow():
-
     algorithm_buttons = Frame(mainFrame)
     algorithm_buttons.pack(side="left")
 
