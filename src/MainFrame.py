@@ -7,7 +7,7 @@ import threading
 
 # WIDTH and HEIGHT of the MainFrame
 MF_WIDTH = 1300
-MF_HEIGHT = 870
+MF_HEIGHT = 810
 
 # Button WIDTH/HEIGHT for the Algorithm - Buttons
 ALGORITHM_BUTTONS_WIDTH = 15
@@ -16,6 +16,8 @@ ALGORITHM_BUTTONS_HEIGHT = 3
 # WIDTH and HEIGHT of the Canvas
 HEIGHT_CANVAS = 700
 WIDTH_CANVAS = 1000
+
+SLEEP = 0.01
 
 mainFrame = Tk()
 canvas = Canvas(mainFrame, width=WIDTH_CANVAS, height=HEIGHT_CANVAS, bg="#ABC")
@@ -59,50 +61,62 @@ def generate_bars(*args):
 # SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS
 # SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS
 ############################################################################################################
-class BubbleThread(threading.Thread):
-    def __init__(self):
+class SortingAlgorithm(threading.Thread):
+    def __init__(self, func):
         threading.Thread.__init__(self)
+        self._func = func
 
     def run(self):
-        try:
-            n = len(bars)
-            for i in range(n - 1):
-                for j in range(0, n - i - 1):
-                    if bars[j] > bars[j + 1]:
-                        bars[j], bars[j + 1] = bars[j + 1], bars[j]
-                        render_bars()
-                        time.sleep(0.02)
-        except IndexError:
-            print()
+        self._func()
 
 
-def start_bubble_thread():
-    thread = BubbleThread()
-    thread.start()
+def bubble_sort():
+    n = len(bars)
+    for i in range(n - 1):
+        for j in range(0, n - i - 1):
+            if bars[j] > bars[j + 1]:
+                bars[j], bars[j + 1] = bars[j + 1], bars[j]
+                render_bars()
+                time.sleep(SLEEP)
 
 
+def insertion_sort():
+    for step in range(1, len(bars)):
+        key = bars[step]
+        j = step - 1
+        while j >= 0 and key < bars[j]:
+            bars[j + 1] = bars[j]
+            j = j - 1
+            render_bars()
+            time.sleep(SLEEP)
+        bars[j + 1] = key
+
+
+def selection_sort():
+    for step in range(len(bars)):
+        min_idx = step
+
+        for i in range(step + 1, len(bars)):
+            if bars[i] < bars[min_idx]:
+                min_idx = i
+                render_bars()
+                time.sleep(SLEEP)
+        (bars[step], bars[min_idx]) = (bars[min_idx], bars[step])
+        render_bars()
+
+
+def start_thread(sortingAlgorithm):
+    if sortingAlgorithm == "bubble_sort":
+        SortingAlgorithm(bubble_sort).start()
+    elif sortingAlgorithm == "insertion_sort":
+        SortingAlgorithm(insertion_sort).start()
+    elif sortingAlgorithm == "selection_sort":
+        SortingAlgorithm(selection_sort).start()
 ############################################################################################################
 # SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS
 # SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS
 # SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS    SORTING ALGORITHMS
 ############################################################################################################
-
-
-#################################################################
-# parameters
-#   - parent: parent of the GUI objects in this Function
-#
-# Function creates the "control buttons" (faster, slower, sort...)
-#################################################################
-def init_button_controls(parent):
-    ttk.Scale(parent, length=250, from_=10, to=100, orient="horizontal",
-              command=generate_bars).grid(row=0, column=0, padx=5, pady=10)
-
-    Button(parent, width=10, text="<<<").grid(row=0, column=1, padx=(10, 0), pady=10)
-    Button(parent, width=10, text=">>>").grid(row=0, column=2, padx=(0, 10), pady=10)
-
-    Button(parent, width=25, height=2, text="Sort!").grid(row=0, column=3, padx=(50, 0), pady=10)
-    Button(parent, width=25, height=2, text="Reset!").grid(row=0, column=4, padx=0, pady=10)
 
 
 #################################################################
@@ -112,25 +126,22 @@ def init_button_controls(parent):
 # Function creates the buttons, that enable the sorting algorithms
 #################################################################
 def init_button_sortingAlgorithms(parent):
-    # bubbleSort = BubbleThread()
-
     Button(parent, width=ALGORITHM_BUTTONS_WIDTH, height=ALGORITHM_BUTTONS_HEIGHT, text="Bubble Sort",
-           command=start_bubble_thread) \
-        .grid(row=0, column=0, padx=50)
+           command=lambda: start_thread("bubble_sort")).grid(row=0, column=0, padx=50)
 
-    Button(parent, width=ALGORITHM_BUTTONS_WIDTH, height=ALGORITHM_BUTTONS_HEIGHT, text="Insertion Sort") \
-        .grid(row=1, column=0, padx=50)
+    Button(parent, width=ALGORITHM_BUTTONS_WIDTH, height=ALGORITHM_BUTTONS_HEIGHT, text="Insertion Sort",
+           command=lambda: start_thread("insertion_sort")).grid(row=1, column=0, padx=50)
 
-    Button(parent, width=ALGORITHM_BUTTONS_WIDTH, height=ALGORITHM_BUTTONS_HEIGHT, text="Selection Sort") \
-        .grid(row=2, column=0, padx=50)
+    Button(parent, width=ALGORITHM_BUTTONS_WIDTH, height=ALGORITHM_BUTTONS_HEIGHT, text="Selection Sort",
+           command=lambda: start_thread("selection_sort")).grid(row=2, column=0, padx=50)
 
+    ttk.Scale(parent, length=150, from_=10, to=100, orient="horizontal",
+              command=generate_bars).grid(row=3, column=0, padx=5, pady=20)
 
 #################################################################
 # Function initializes and runs the GUI
 #################################################################
 def initWindow():
-    button_controls = Frame(mainFrame)
-    button_controls.pack(side="bottom")
 
     algorithm_buttons = Frame(mainFrame)
     algorithm_buttons.pack(side="left")
@@ -138,7 +149,6 @@ def initWindow():
     canvas.pack(pady=50)
 
     init_button_sortingAlgorithms(algorithm_buttons)
-    init_button_controls(button_controls)
 
     mainFrame.geometry(f"{MF_WIDTH}x{MF_HEIGHT}")
     mainFrame.mainloop()
